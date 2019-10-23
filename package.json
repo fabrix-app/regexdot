@@ -1,0 +1,56 @@
+{
+  "name": "regexdot",
+  "version": "1.0.0",
+  "repository": "git@github.com:fabrix-app/regexdot.git",
+  "description": "Mapped Object patterns into RegExp‍",
+  "main": "dist/index.js",
+  "types": "src/typings/index.d.ts",
+  "license": "MIT",
+  "author": {
+    "name": "scott-wyatt",
+    "email": "scottwyatt86@gmail.com",
+    "url": "https://cali-style.com"
+  },
+  "inspiration": {
+    "name": "Luke Edwards",
+    "email": "luke.edwards05@gmail.com",
+    "url": "lukeed.com"
+  },
+  "engines": {
+    "node": ">=6"
+  },
+  "scripts": {
+    "release": "standard-version",
+    "build": "tsc -p ./lib/tsconfig.release.json",
+    "lint": "tslint -p ./lib",
+    "watch": "tsc -w -p ./lib/tsconfig.release.json",
+    "pre-test": "run-s clean lint build",
+    "compile": "npm run clean && npm run build",
+    "clean": "rm -rf dist",
+    "test": "npm run clean && npm run lint && npm run build && nyc mocha"
+  },
+  "pre-commit": [
+    "test"
+  ],
+  "files": [
+    "*.d.ts",
+    "dist"
+  ],
+  "keywords": [
+    "regexp"
+  ],
+  "devDependencies": {
+    "@types/node": "~12.7.8",
+    "mocha": "^6",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^14.1.1",
+    "standard-version": "^7.0.0",
+    "supertest": "^3.3.0",
+    "tslib": "~1.9.0",
+    "tslint": "~5.10.0",
+    "tslint-microsoft-contrib": "~5.0.3",
+    "tsutils": "~3.9.1",
+    "typescript": "~3.3.4000",
+    "typescript-closure-compiler": "^1.8.11"
+  }
+}
