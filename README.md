@@ -1,18 +1,27 @@
-# regexdot [![Build Status](https://badgen.now.sh/travis/fabrix/regexdot)](https://travis-ci.org/fabrix/regexdot)
+# regexdot
+
+[![Gitter][gitter-image]][gitter-url]
+[![NPM version][npm-image]][npm-url]
+[![Build Status][ci-image]][ci-url]
+[![Test Coverage][coverage-image]][coverage-url]
+[![Dependency Status][daviddm-image]][daviddm-url]
+[![Follow @FabrixApp on Twitter][twitter-image]][twitter-url]
+
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
 > A tiny utility that converts dot object access patterns into RegExp.
 
-With `regexdot`, you may turn a path string (eg, `/users/:id`) into a regular expression.
+With `regexdot`, you may turn a path string (eg, `.users.:id`) into a regular expression.
 
 An object with shape of `{ keys, pattern }` is returned, where `pattern` is the `RegExp` and `keys` is an array of your parameter name(s) in the order that they appeared.
 
 This module does not create a `keys` dictionary, nor mutate an existing variable. Also, this only ships a parser, which only accept strings. Similarly, and most importantly, `regexdot` **only** handles basic path operators:
 
-* Static (`/foo`, `/foo/bar`)
-* Parameter (`/:title`, `/books/:title`, `/books/:genre/:title`)
-* Parameter w/ Suffix (`/movies/:title.mp4`, `/movies/:title.(mp4|mov)`)
-* Optional Parameters (`/:title?`, `/books/:title?`, `/books/:genre/:title?`)
-* Wildcards (`*`, `/books/*`, `/books/:genre/*`)
+* Static (`.foo`, `.foo.bar`)
+* Parameter (`.:title`, `.books.:title`, `.books.:genre.:title`)
+* Parameter w. Suffix (`.movies.:title.mp4`, `.movies.:title.(mp4|mov)`)
+* Optional Parameters (`.:title?`, `.books.:title?`, `.books.:genre.:title?`)
+* Wildcards (`*`, `.books.*`, `.books.:genre.*`)
 
 This module exposes two module definitions:
 
@@ -23,7 +32,6 @@ This module exposes two module definitions:
 ```
 $ npm install --save regexdot
 ```
-
 
 ## Usage
 
@@ -161,3 +169,21 @@ Type: `RegExp`
 Your RegExp pattern.
 
 > **Important:** This pattern is used _as is_! No parsing or interpreting is done on your behalf.
+
+
+
+
+
+[npm-image]: https://img.shields.io/npm/v/@fabrix/regexdot.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/@fabrix/regexdot
+[ci-image]: https://img.shields.io/circleci/project/github/fabrix-app/regexdot/master.svg
+[ci-url]: https://circleci.com/gh/fabrix-app/regexdot/tree/master
+[daviddm-image]: http://img.shields.io/david/fabrix-app/regexdot.svg?style=flat-square
+[daviddm-url]: https://david-dm.org/fabrix-app/regexdot
+[gitter-image]: http://img.shields.io/badge/+%20GITTER-JOIN%20CHAT%20%E2%86%92-1DCE73.svg?style=flat-square
+[gitter-url]: https://gitter.im/fabrix-app/fabrix
+[twitter-image]: https://img.shields.io/twitter/follow/FabrixApp.svg?style=social
+[twitter-url]: https://twitter.com/FabrixApp
+[coverage-image]: https://img.shields.io/codeclimate/coverage/github/fabrix-app/regexdot.svg?style=flat-square
+[coverage-url]: https://codeclimate.com/github/fabrix-app/regexdot/coverage
+
