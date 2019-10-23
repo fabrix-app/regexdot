@@ -6,32 +6,36 @@ const {regexdot} = require('../dist/index')
 
 const hasNamedGroups = 'groups' in /x/.exec('x');
 
-function run(route, url, loose) {
-  let i = 0, out = {}, result = regexdot(route, !!loose);
-  let matches = result.pattern.exec(url);
-  if (matches === null) return false;
-  if (matches.groups) return matches.groups;
+function run(route, path, loose) {
+  let i = 0, out = {}, result = regexdot(route, !!loose)
+  let matches = result.pattern.exec(path)
+  if (matches === null) {
+    return false
+  }
+  if (matches.groups) {
+    return matches.groups
+  }
   while (i < result.keys.length) {
     out[result.keys[i]] = matches[++i] || null;
   }
-  return out;
+  return out
 }
 
-function raw(route, url, loose) {
-  return regexdot(route, !!loose).pattern.exec(url);
+function raw(route, path, loose) {
+  return regexdot(route, !!loose).pattern.exec(path)
 }
 
 const test = class {
 
 }
-test.prototype.toExec = function (route, url, params) {
-  let out = run(route, url);
-  assert.deepEqual(out, params, out ? `~> parsed "${url}" into correct params` : `~> route and "${url}" did not match`);
+test.prototype.toExec = function (route, path, params) {
+  let out = run(route, path);
+  assert.deepEqual(out, params, out ? `~> parsed "${path}" into correct params` : `~> route and "${path}" did not match`);
 };
 
-test.prototype.toLooseExec = function (route, url, params) {
-  let out = run(route, url, true);
-  assert.deepEqual(out, params, out ? `~> parsed "${url}" into correct params` : `~> route and "${url}" did not match`);
+test.prototype.toLooseExec = function (route, path, params) {
+  let out = run(route, path, true);
+  assert.deepEqual(out, params, out ? `~> parsed "${path}" into correct params` : `~> route and "${path}" did not match`);
 };
 
 const t = new test()
@@ -48,7 +52,9 @@ describe('#regexdot', () => {
       assert.ok(foo.keys, '~> has "keys" key');
       assert.ok(Array.isArray(foo.keys), '~~> is an Array');
     })
-    it('should ensure lead dot', () => {
+  })
+  describe('## usage', () => {
+    it('should ensure no lead dot', () => {
       assert.deepEqual(regexdot('/'), regexdot(''), '~> root');
       assert.deepEqual(regexdot('/books'), regexdot('books'), '~> static');
       assert.deepEqual(regexdot('/books/:title'), regexdot('books/:title'), '~> param');
@@ -77,7 +83,7 @@ describe('#regexdot', () => {
     })
     describe('## params', () => {
       describe('### param :: static', () => {
-        describe('### param :: static :: none', () => {
+        describe('#### param :: static :: none', () => {
           it('should param :: static :: none', () => {
             let {keys, pattern} = regexdot('/books/:title');
             assert.deepEqual(keys, ['title'], '~> keys has "title" value');
@@ -87,14 +93,14 @@ describe('#regexdot', () => {
             assert.equal(pattern.test('/books/narnia/'), true, '~> matches definition w/ trailing slash');
             assert.equal(pattern.test('/books/narnia/hello'), false, '~> does not match extra bits');
             assert.equal(pattern.test('books/narnia'), false, '~> does not match path without lead slash');
-            let [url, value] = pattern.exec('/books/narnia');
+            let [path, value] = pattern.exec('/books/narnia');
 
-            assert.equal(url, '/books/narnia', '~> executing pattern on correct trimming');
+            assert.equal(path, '/books/narnia', '~> executing pattern on correct trimming');
             assert.equal(value, 'narnia', '~> executing pattern gives correct value');
 
           })
         })
-        describe('### param :: static :: multiple', () => {
+        describe('#### param :: static :: multiple', () => {
           it('should param :: static :: multiple', () => {
             let {keys, pattern} = regexdot('/foo/bar/:title');
             assert.deepEqual(keys, ['title'], '~> keys has "title" value');
@@ -107,8 +113,8 @@ describe('#regexdot', () => {
             assert.equal(pattern.test('/foo/narnia'), false, '~> does not match if statics are different');
             assert.equal(pattern.test('/bar/narnia'), false, '~> does not match if statics are different');
 
-            let [url, value] = pattern.exec('/foo/bar/narnia');
-            assert.equal(url, '/foo/bar/narnia', '~> executing pattern on correct trimming');
+            let [path, value] = pattern.exec('/foo/bar/narnia');
+            assert.equal(path, '/foo/bar/narnia', '~> executing pattern on correct trimming');
             assert.equal(value, 'narnia', '~> executing pattern gives correct value');
           })
         })
@@ -126,8 +132,8 @@ describe('#regexdot', () => {
           assert.equal(pattern.test('/books/smith/narnia/reviews'), false, '~> does not match extra bits');
           assert.equal(pattern.test('books/smith/narnia'), false, '~> does not match path without lead slash');
 
-          let [url, author, title] = pattern.exec('/books/smith/narnia');
-          assert.equal(url, '/books/smith/narnia', '~> executing pattern on correct trimming');
+          let [path, author, title] = pattern.exec('/books/smith/narnia');
+          assert.equal(path, '/books/smith/narnia', '~> executing pattern on correct trimming');
           assert.equal(author, 'smith', '~> executing pattern gives correct value');
           assert.equal(title, 'narnia', '~> executing pattern gives correct value');
         });
@@ -148,7 +154,7 @@ describe('#regexdot', () => {
       })
       describe('### param :: suffices', () => {
         it('should param :: suffices', () => {
-          let { keys, pattern } = regexdot('/movies/:title.(mp4|mov)');
+          let {keys, pattern} = regexdot('/movies/:title.(mp4|mov)');
           assert.deepEqual(keys, ['title'], '~> keys has "title" only (no suffix)');
           assert.ok(!pattern.test('/movies'), '~> does not match naked base');
           assert.ok(!pattern.test('/movies/'), '~> does not match naked base w/ trailing slash');
@@ -162,7 +168,7 @@ describe('#regexdot', () => {
       })
       describe('### param :: optional', () => {
         it('should param :: optional', () => {
-          let { keys, pattern } = regexdot('/books/:author/:title?');
+          let {keys, pattern} = regexdot('/books/:author/:title?');
           assert.deepEqual(keys, ['author', 'title'], '~> keys has "author" & "title" values');
           assert.ok(!pattern.test('/books'), '~> does not match naked base');
           assert.ok(!pattern.test('/books/'), '~> does not match naked base w/ trailing slash');
@@ -178,7 +184,7 @@ describe('#regexdot', () => {
         });
 
         it('should param :: optional :: static :: none', () => {
-          let { keys, pattern } = regexdot('/:title?');
+          let {keys, pattern} = regexdot('/:title?');
           assert.deepEqual(keys, ['title'], '~> keys has "title" value');
           assert.ok(pattern.test('/'), '~> matches root w/ trailing slash');
           assert.ok(pattern.test('/narnia'), '~> matches definition');
@@ -190,7 +196,7 @@ describe('#regexdot', () => {
         });
 
         it('param :: optional :: multiple', () => {
-          let { keys, pattern } = regexdot('/books/:genre/:author?/:title?');
+          let {keys, pattern} = regexdot('/books/:genre/:author?/:title?');
           assert.deepEqual(keys, ['genre', 'author', 'title'], '~> keys has "genre", "author" & "title" values');
           assert.ok(!pattern.test('/books'), '~> does not match naked base');
           assert.ok(!pattern.test('/books/'), '~> does not match naked base w/ trailing slash');
@@ -211,7 +217,7 @@ describe('#regexdot', () => {
     })
     describe('### wildcard', () => {
       it('wildcard', () => {
-        let { keys, pattern } = regexdot('/books/*');
+        let {keys, pattern} = regexdot('/books/*');
         assert.deepEqual(keys, ['wild'], '~> keys has "wild" value');
         assert.ok(!pattern.test('/books'), '~> does not match naked base');
         assert.ok(pattern.test('/books/'), '~> does not match naked base w/ trailing slash');
@@ -223,10 +229,10 @@ describe('#regexdot', () => {
         assert.equal(value, 'narnia/reviews', '~> executing pattern gives ALL values after base');
       })
 
-      describe('### wildcard :: root', () => {
+      describe('#### wildcard :: root', () => {
 
         it('wildcard :: root', () => {
-          let { keys, pattern } = regexdot('*');
+          let {keys, pattern} = regexdot('*');
           assert.deepEqual(keys, ['wild'], '~> keys has "wild" value');
           assert.ok(pattern.test('/'), '~> matches root path');
           assert.ok(pattern.test('/narnia'), '~> matches definition');
@@ -289,7 +295,7 @@ describe('#regexdot', () => {
       t.toExec('/:title/:genre?', '/hello/world/mundo/', false);
       t.toExec('/:title/:genre?', '/hello/world/mundo', false);
 
-      console.log('/books/*');
+      console.log('/books/*')
       t.toExec('/books/*', '/books', false);
       t.toExec('/books/*', '/books/', {wild: null});
       t.toExec('/books/*', '/books/world', {wild: 'world'});
@@ -297,7 +303,7 @@ describe('#regexdot', () => {
       t.toExec('/books/*', '/books/world/howdy', {wild: 'world/howdy'});
       t.toExec('/books/*', '/books/world/howdy/', {wild: 'world/howdy/'});
 
-      console.log('/books/*?');
+      console.log('/books/*?')
       t.toExec('/books/*?', '/books', false);
       t.toExec('/books/*?', '/books/', {wild: null});
       t.toExec('/books/*?', '/books/world', {wild: 'world'});
@@ -311,35 +317,35 @@ describe('#regexdot', () => {
     it('execs :: loose', () => {
       // false = did not match
 
-      console.log('/books');
+      console.log('/books')
       t.toLooseExec('/books', '/', false);
       t.toLooseExec('/books', '/books', {});
       t.toLooseExec('/books', '/books/', {});
       t.toLooseExec('/books', '/books/world/', {});
       t.toLooseExec('/books', '/books/world', {});
 
-      console.log('/:title');
+      console.log('/:title')
       t.toLooseExec('/:title', '/hello', {title: 'hello'});
       t.toLooseExec('/:title', '/hello/', {title: 'hello'});
       t.toLooseExec('/:title', '/hello/world/', {title: 'hello'});
       t.toLooseExec('/:title', '/hello/world', {title: 'hello'});
       t.toLooseExec('/:title', '/', false);
 
-      console.log('/:title?');
+      console.log('/:title?')
       t.toLooseExec('/:title?', '/', {title: null});
       t.toLooseExec('/:title?', '/hello', {title: 'hello'});
       t.toLooseExec('/:title?', '/hello/', {title: 'hello'});
       t.toLooseExec('/:title?', '/hello/world/', {title: 'hello'});
       t.toLooseExec('/:title?', '/hello/world', {title: 'hello'});
 
-      console.log('/:title.mp4');
+      console.log('/:title.mp4')
       t.toLooseExec('/:title.mp4', '/hello.mp4', {title: 'hello'});
       t.toLooseExec('/:title.mp4', '/hello.mp4/', {title: 'hello'});
       t.toLooseExec('/:title.mp4', '/hello.mp4/history/', {title: 'hello'});
       t.toLooseExec('/:title.mp4', '/hello.mp4/history', {title: 'hello'});
       t.toLooseExec('/:title.mp4', '/', false);
 
-      console.log('/:title/:genre');
+      console.log('/:title/:genre')
       t.toLooseExec('/:title/:genre', '/hello/world', {title: 'hello', genre: 'world'});
       t.toLooseExec('/:title/:genre', '/hello/world/', {title: 'hello', genre: 'world'});
       t.toLooseExec('/:title/:genre', '/hello/world/mundo/', {title: 'hello', genre: 'world'});
@@ -347,7 +353,7 @@ describe('#regexdot', () => {
       t.toLooseExec('/:title/:genre', '/hello/', false);
       t.toLooseExec('/:title/:genre', '/hello', false);
 
-      console.log('/:title/:genre?');
+      console.log('/:title/:genre?')
       t.toLooseExec('/:title/:genre?', '/hello', {title: 'hello', genre: null});
       t.toLooseExec('/:title/:genre?', '/hello/', {title: 'hello', genre: null});
       t.toLooseExec('/:title/:genre?', '/hello/world', {title: 'hello', genre: 'world'});
@@ -355,7 +361,7 @@ describe('#regexdot', () => {
       t.toLooseExec('/:title/:genre?', '/hello/world/mundo/', {title: 'hello', genre: 'world'});
       t.toLooseExec('/:title/:genre?', '/hello/world/mundo', {title: 'hello', genre: 'world'});
 
-      console.log('/books/*');
+      console.log('/books/*')
       t.toLooseExec('/books/*', '/books', false);
       t.toLooseExec('/books/*', '/books/', {wild: null});
       t.toLooseExec('/books/*', '/books/world', {wild: 'world'});
@@ -363,7 +369,7 @@ describe('#regexdot', () => {
       t.toLooseExec('/books/*', '/books/world/howdy', {wild: 'world/howdy'});
       t.toLooseExec('/books/*', '/books/world/howdy/', {wild: 'world/howdy/'});
 
-      console.log('/books/*?');
+      console.log('/books/*?')
       t.toLooseExec('/books/*?', '/books', false);
       t.toLooseExec('/books/*?', '/books/', {wild: null});
       t.toLooseExec('/books/*?', '/books/world', {wild: 'world'});
@@ -373,158 +379,159 @@ describe('#regexdot', () => {
     })
 
     it('(raw) exec', () => {
-      console.log('/foo ~> "/foo"');
-      let [url, ...vals] = raw('/foo', '/foo');
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
-      assert.deepEqual(vals, [], '~> parsed value segments correctly');
+      console.log('/foo ~> "/foo"')
+
+      let [path, ...vals] = raw('/foo', '/foo')
+      assert.equal(path, '/foo', '~> parsed `path` correctly')
+      assert.deepEqual(vals, [], '~> parsed value segments correctly')
 
       console.log('/foo ~> "/foo/"');
-      [url, ...vals] = raw('/foo/', '/foo/');
-      assert.equal(url, '/foo/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/', '/foo/');
+      assert.equal(path, '/foo/', '~> parsed `path` correctly');
       assert.deepEqual(vals, [], '~> parsed value segments correctly');
 
 
       console.log('/:path ~> "/foo"');
-      [url, ...vals] = raw('/:path', '/foo');
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo');
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
       console.log('/:path ~> "/foo/"');
-      [url, ...vals] = raw('/:path', '/foo/');
-      assert.equal(url, '/foo/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo/');
+      assert.equal(path, '/foo/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub ~> "/foo/bar"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar');
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar');
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
       console.log('/:path/:sub ~> "/foo/bar/"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar/');
-      assert.equal(url, '/foo/bar/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar/');
+      assert.equal(path, '/foo/bar/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub? ~> "/foo"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo');
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo');
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', undefined], '~> parsed value segments correctly');
 
       console.log('/:path/:sub? ~> "/foo/"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo/');
-      assert.equal(url, '/foo/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo/');
+      assert.equal(path, '/foo/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', undefined], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub? ~> "/foo/bar"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo/bar');
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo/bar');
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
       console.log('/:path/:sub? ~> "/foo/bar/"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar/');
-      assert.equal(url, '/foo/bar/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar/');
+      assert.equal(path, '/foo/bar/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
 
       console.log('/:path/* ~> "/foo/bar/baz"');
-      [url, ...vals] = raw('/:path/*', '/foo/bar/baz');
-      assert.equal(url, '/foo/bar/baz', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/*', '/foo/bar/baz');
+      assert.equal(path, '/foo/bar/baz', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar/baz'], '~> parsed value segments correctly');
 
       console.log('/:path/* ~> "/foo/bar/baz/"');
-      [url, ...vals] = raw('/:path/*', '/foo/bar/baz/');
-      assert.equal(url, '/foo/bar/baz/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/*', '/foo/bar/baz/');
+      assert.equal(path, '/foo/bar/baz/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar/baz/'], '~> parsed value segments correctly');
 
 
       console.log('/foo/:path ~> "/foo/bar"');
-      [url, ...vals] = raw('/foo/:path', '/foo/bar');
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/:path', '/foo/bar');
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['bar'], '~> parsed value segments correctly');
 
       console.log('/foo/:path ~> "/foo/bar/"');
-      [url, ...vals] = raw('/foo/:path', '/foo/bar/');
-      assert.equal(url, '/foo/bar/', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/:path', '/foo/bar/');
+      assert.equal(path, '/foo/bar/', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['bar'], '~> parsed value segments correctly');
     });
 
     it('(raw) exec :: loose', () => {
       console.log('/foo ~> "/foo"');
-      let [url, ...vals] = raw('/foo', '/foo', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      let [path, ...vals] = raw('/foo', '/foo', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, [], '~> parsed value segments correctly');
 
       console.log('/foo ~> "/foo/"');
-      [url, ...vals] = raw('/foo/', '/foo/', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/', '/foo/', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, [], '~> parsed value segments correctly');
 
 
       console.log('/:path ~> "/foo"');
-      [url, ...vals] = raw('/:path', '/foo', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
       console.log('/:path ~> "/foo/"');
-      [url, ...vals] = raw('/:path', '/foo/', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo/', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub ~> "/foo/bar"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
       console.log('/:path/:sub ~> "/foo/bar/"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar/', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar/', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub? ~> "/foo"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', undefined], '~> parsed value segments correctly');
 
       console.log('/:path/:sub? ~> "/foo/"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo/', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo/', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', undefined], '~> parsed value segments correctly');
 
 
       console.log('/:path/:sub? ~> "/foo/bar"');
-      [url, ...vals] = raw('/:path/:sub?', '/foo/bar', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub?', '/foo/bar', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
       console.log('/:path/:sub? ~> "/foo/bar/"');
-      [url, ...vals] = raw('/:path/:sub', '/foo/bar/', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/:sub', '/foo/bar/', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar'], '~> parsed value segments correctly');
 
 
       console.log('/:path/* ~> "/foo/bar/baz"');
-      [url, ...vals] = raw('/:path/*', '/foo/bar/baz', 1);
-      assert.equal(url, '/foo/bar/baz', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path/*', '/foo/bar/baz', 1);
+      assert.equal(path, '/foo/bar/baz', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo', 'bar/baz'], '~> parsed value segments correctly');
 
       console.log('/:path/* ~> "/foo/bar/baz/"');
-      [url, ...vals] = raw('/:path/*', '/foo/bar/baz/', 1);
-      assert.equal(url, '/foo/bar/baz/', '~> parsed `url` correctly'); // trail
+      [path, ...vals] = raw('/:path/*', '/foo/bar/baz/', 1);
+      assert.equal(path, '/foo/bar/baz/', '~> parsed `path` correctly'); // trail
       assert.deepEqual(vals, ['foo', 'bar/baz/'], '~> parsed value segments correctly');
 
 
       console.log('/foo/:path ~> "/foo/bar"');
-      [url, ...vals] = raw('/foo/:path', '/foo/bar', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/:path', '/foo/bar', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['bar'], '~> parsed value segments correctly');
 
       console.log('/foo/:path ~> "/foo/bar/"');
-      [url, ...vals] = raw('/foo/:path', '/foo/bar/', 1);
-      assert.equal(url, '/foo/bar', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/:path', '/foo/bar/', 1);
+      assert.equal(path, '/foo/bar', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['bar'], '~> parsed value segments correctly');
 
     });
@@ -549,24 +556,24 @@ describe('#regexdot', () => {
 
     it('(extra) exec :: loose', () => {
       console.log('/foo ~> "/foo/bar" (extra)');
-      let [url, ...vals] = raw('/foo', '/foo/bar', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      let [path, ...vals] = raw('/foo', '/foo/bar', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, [], '~> parsed value segments correctly');
 
       console.log('/foo ~> "/foo/bar/" (extra)');
-      [url, ...vals] = raw('/foo/', '/foo/bar/', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/foo/', '/foo/bar/', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, [], '~> parsed value segments correctly');
 
 
       console.log('/:path ~> "/foo/bar" (extra)');
-      [url, ...vals] = raw('/:path', '/foo/bar', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo/bar', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
       console.log('/:path ~> "/foo/bar/" (extra)');
-      [url, ...vals] = raw('/:path', '/foo/bar/', 1);
-      assert.equal(url, '/foo', '~> parsed `url` correctly');
+      [path, ...vals] = raw('/:path', '/foo/bar/', 1);
+      assert.equal(path, '/foo', '~> parsed `path` correctly');
       assert.deepEqual(vals, ['foo'], '~> parsed value segments correctly');
 
     })
@@ -600,8 +607,8 @@ describe('#regexdot', () => {
         assert.ok(pattern.test('/2019/narnia/hello'), '~> allows extra bits');
 
         // exec results, array access
-        let [url, value] = pattern.exec('/2019/books');
-        assert.equal(url, '/2019', '~> executing pattern on correct trimming');
+        let [path, value] = pattern.exec('/2019/books');
+        assert.equal(path, '/2019', '~> executing pattern on correct trimming');
         assert.equal(value, '2019', '~> executing pattern gives correct value');
 
         // exec results, named object
@@ -624,8 +631,8 @@ describe('#regexdot', () => {
         assert.ok(!pattern.test('books/narnia'), '~> does not match path without lead slash');
 
         // exec results, array access
-        let [url, value] = pattern.exec('/books/narnia');
-        assert.equal(url, '/books/narnia', '~> executing pattern on correct trimming');
+        let [path, value] = pattern.exec('/books/narnia');
+        assert.equal(path, '/books/narnia', '~> executing pattern on correct trimming');
         assert.equal(value, 'narnia', '~> executing pattern gives correct value');
 
         // exec results, named object
@@ -650,8 +657,8 @@ describe('#regexdot', () => {
         assert.ok(pattern.test('/2019-10/30'));
 
         // exec results, array access
-        let [url, year, month, day] = pattern.exec('/2019-05/30/');
-        assert.equal(url, '/2019-05/30', '~> executing pattern on correct trimming');
+        let [path, year, month, day] = pattern.exec('/2019-05/30/');
+        assert.equal(path, '/2019-05/30', '~> executing pattern on correct trimming');
         assert.equal(year, '2019', '~> executing pattern gives correct "year" value');
         assert.equal(month, '05', '~> executing pattern gives correct "month" value');
         assert.equal(day, '30', '~> executing pattern gives correct "day" value');
@@ -677,15 +684,15 @@ describe('#regexdot', () => {
         assert.ok(pattern.test('/movies/foo.mp4/'));
 
         // exec results, array access
-        let [url, title] = pattern.exec('/movies/narnia.mp4');
-        assert.equal(url, '/movies/narnia.mp4', '~> executing pattern on correct trimming');
+        let [path, title] = pattern.exec('/movies/narnia.mp4');
+        assert.equal(path, '/movies/narnia.mp4', '~> executing pattern on correct trimming');
         assert.equal(title, 'narnia', '~> executing pattern gives correct "title" value');
 
         // exec results, named object
-        t.toExec(rgx, '/movies/narnia.mp4', {title: 'narnia'});
-        t.toExec(rgx, '/movies/narnia.mp4/', {title: 'narnia'});
+        t.toExec(rgx, '/movies/narnia.mp4', {title: 'narnia'})
+        t.toExec(rgx, '/movies/narnia.mp4/', {title: 'narnia'})
 
-      });
+      })
 
       it('(RegExp) param :: suffices', () => {
         let rgx = /^\/movies[/](?<title>\w+)\.(mp4|mov)/i;
@@ -703,8 +710,8 @@ describe('#regexdot', () => {
         assert.ok(pattern.test('/movies/foo.mov/'));
 
         // exec results, array access
-        let [url, title] = pattern.exec('/movies/narnia.mov');
-        assert.equal(url, '/movies/narnia.mov', '~> executing pattern on correct trimming');
+        let [path, title] = pattern.exec('/movies/narnia.mov');
+        assert.equal(path, '/movies/narnia.mov', '~> executing pattern on correct trimming');
         assert.equal(title, 'narnia', '~> executing pattern gives correct "title" value');
 
         // exec results, named object
@@ -730,8 +737,8 @@ describe('#regexdot', () => {
         assert.ok(!pattern.test('books/smith/narnia'));
 
         // exec results, array access
-        let [url, author, title] = pattern.exec('/books/smith/narnia/');
-        assert.equal(url, '/books/smith/narnia/', '~> executing pattern on correct trimming');
+        let [path, author, title] = pattern.exec('/books/smith/narnia/');
+        assert.equal(path, '/books/smith/narnia/', '~> executing pattern on correct trimming');
         assert.equal(author, 'smith', '~> executing pattern gives correct value');
         assert.equal(title, 'narnia', '~> executing pattern gives correct value');
 
@@ -760,8 +767,8 @@ describe('#regexdot', () => {
       assert.ok(!pattern.test('books/smith/narnia'));
 
       // exec results, array access
-      let [url, author, title] = pattern.exec('/books/smith/narnia/');
-      assert.equal(url, '/books/smith/narnia', '~> executing pattern on correct trimming');
+      let [path, author, title] = pattern.exec('/books/smith/narnia/');
+      assert.equal(path, '/books/smith/narnia', '~> executing pattern on correct trimming');
       assert.equal(author, 'smith', '~> executing pattern gives correct value');
       assert.equal(title, 'narnia', '~> executing pattern gives correct value');
 

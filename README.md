@@ -1,12 +1,12 @@
-# regexdot [![Build Status](https://badgen.now.sh/travis/lukeed/regexdot)](https://travis-ci.org/lukeed/regexdot)
+# regexdot [![Build Status](https://badgen.now.sh/travis/fabrix/regexdot)](https://travis-ci.org/fabrix/regexdot)
 
-> A tiny (308B) utility that converts route patterns into RegExp. Limited alternative to [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp) 🙇
+> A tiny utility that converts dot object access patterns into RegExp.
 
-With `regexdot`, you may turn a pathing string (eg, `/users/:id`) into a regular expression.
+With `regexdot`, you may turn a path string (eg, `/users/:id`) into a regular expression.
 
 An object with shape of `{ keys, pattern }` is returned, where `pattern` is the `RegExp` and `keys` is an array of your parameter name(s) in the order that they appeared.
 
-Unlike [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp), this module does not create a `keys` dictionary, nor mutate an existing variable. Also, this only ships a parser, which only accept strings. Similarly, and most importantly, `regexdot` **only** handles basic pathing operators:
+This module does not create a `keys` dictionary, nor mutate an existing variable. Also, this only ships a parser, which only accept strings. Similarly, and most importantly, `regexdot` **only** handles basic path operators:
 
 * Static (`/foo`, `/foo/bar`)
 * Parameter (`/:title`, `/books/:title`, `/books/:genre/:title`)
@@ -16,8 +16,7 @@ Unlike [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp), this modu
 
 This module exposes two module definitions:
 
-* **CommonJS**: `dist/regexdot.js`
-* **ESModule**: `dist/regexdot.mjs`
+* **CommonJS**: `dist/index.js`
 
 ## Install
 
@@ -29,7 +28,7 @@ $ npm install --save regexdot
 ## Usage
 
 ```js
-const regexdot = require('regexdot');
+const { regexdot } = require('@fabrix/regexdot')
 
 // Example param-assignment
 function exec(path, result) {
@@ -79,10 +78,10 @@ let baz = regexdot('users/*');
 // baz.keys => ['wild']
 
 baz.pattern.test('/users'); //=> false
-baz.pattern.test('/users/lukeed'); //=> true
+baz.pattern.test('/users/fabrix'); //=> true
 
-exec('/users/lukeed/repos/new', baz);
-//=> { wild: 'lukeed/repos/new' }
+exec('/users/fabrix/repos/new', baz);
+//=> { wild: 'fabrix/repos/new' }
 ```
 
 > **Important:** When matching/testing against a generated RegExp, your path **must** begin with a leading slash (`"/"`)!
@@ -130,7 +129,7 @@ Returns a `{ keys, pattern }` object, where `pattern` is a generated `RegExp` in
 #### str
 Type: `String`
 
-The route/pathing string to convert.
+The path string to convert.
 
 > **Note:** It does not matter if your `str` begins with a `/` &mdash; it will be added if missing.
 
@@ -142,13 +141,13 @@ Should the `RegExp` match URLs that are longer than the [`str`](#str) pattern it
 By default, the generated `RegExp` will test that the URL begins and _ends with_ the pattern.
 
 ```js
-const rgx = require('regexdot');
+const { regexdot } = require('@fabrix/regexdot');
 
-rgx('/users').pattern.test('/users/lukeed'); //=> false
-rgx('/users', true).pattern.test('/users/lukeed'); //=> true
+regexdot('/users').pattern.test('/users/fabrix'); //=> false
+regexdot('/users', true).pattern.test('/users/fabrix'); //=> true
 
-rgx('/users/:name').pattern.test('/users/lukeed/repos'); //=> false
-rgx('/users/:name', true).pattern.test('/users/lukeed/repos'); //=> true
+regexdot('/users/:name').pattern.test('/users/fabrix/repos'); //=> false
+regexdot('/users/:name', true).pattern.test('/users/fabrix/repos'); //=> true
 ```
 
 ### regexdot(rgx)
@@ -162,14 +161,3 @@ Type: `RegExp`
 Your RegExp pattern.
 
 > **Important:** This pattern is used _as is_! No parsing or interpreting is done on your behalf.
-
-
-## Related
-
-- [trouter](https://github.com/lukeed/trouter) - A server-side HTTP router that extends from this module.
-- [matchit](https://github.com/lukeed/matchit) - Similar (650B) library, but relies on String comparison instead of `RegExp`s.
-
-
-## License
-
-MIT © [Luke Edwards](https://lukeed.com)
