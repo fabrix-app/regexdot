@@ -32,59 +32,61 @@ const { regexdot } = require('@fabrix/regexdot')
 
 // Example param-assignment
 function exec(path, result) {
-  let i=0, out={};
-  let matches = result.pattern.exec(path);
+  let i=0, out={}
+  let matches = result.pattern.exec(path)
   while (i < result.keys.length) {
-    out[ result.keys[i] ] = matches[++i] || null;
+    out[ result.keys[i] ] = matches[++i] || null
   }
-  return out;
+  return out
 }
 
 
 // Parameter, with Optional Parameter
 // ---
-let foo = regexdot('/books/:genre/:title?')
-// foo.pattern => /^\/books\/([^\/]+?)(?:\/([^\/]+?))?\/?$/i
+let foo = regexdot('.books.:genre.:title?')
+// foo.pattern => /^\.books\.([^\.]+?)(?:\.([^\.]+?))?\.?$/i
 // foo.keys => ['genre', 'title']
 
-foo.pattern.test('/books/horror'); //=> true
-foo.pattern.test('/books/horror/goosebumps'); //=> true
+foo.pattern.test('.books.horror') // => true
+foo.pattern.test('.books.horror.goosebumps') // => true
 
-exec('/books/horror', foo);
+exec('.books.horror', foo)
 //=> { genre: 'horror', title: null }
 
-exec('/books/horror/goosebumps', foo);
+exec('.books.horror.goosebumps', foo)
 //=> { genre: 'horror', title: 'goosebumps' }
 
 
 // Parameter, with suffix
 // ---
-let bar = regexdot('/movies/:title.(mp4|mov)');
+let bar = regexdot('.movies.:title.(mp4|mov)')
 // bar.pattern => /^\/movies\/([^\/]+?)\.(mp4|mov)\/?$/i
 // bar.keys => ['title']
 
-bar.pattern.test('/movies/narnia'); //=> false
-bar.pattern.test('/movies/narnia.mp3'); //=> false
-bar.pattern.test('/movies/narnia.mp4'); //=> true
+bar.pattern.test('.movies.narnia') //=> false
+bar.pattern.test('.movies.narnia.mp3') //=> false
+bar.pattern.test('.movies.narnia.mp4') //=> true
 
-exec('/movies/narnia.mp4', bar);
+exec('.movies.narnia.mp4', bar)
 //=> { title: 'narnia' }
 
 
 // Wildcard
 // ---
-let baz = regexdot('users/*');
-// baz.pattern => /^\/users\/(.*)\/?$/i
+let baz = regexdot('users/*')
+// baz.pattern => /^\.users\.(.*)\.?$/i
 // baz.keys => ['wild']
 
-baz.pattern.test('/users'); //=> false
-baz.pattern.test('/users/fabrix'); //=> true
+baz.pattern.test('.users') //=> false
+baz.pattern.test('.users.fabrix') //=> true
 
-exec('/users/fabrix/repos/new', baz);
+exec('.users.fabrix.repos.new', baz)
 //=> { wild: 'fabrix/repos/new' }
 ```
 
-> **Important:** When matching/testing against a generated RegExp, your path **must** begin with a leading slash (`"/"`)!
+> **Importnat:** Using `::` will assume that it is not a param but a message header. Eg. `messege::commplete` does not contain any parameters.
+
+> **Important:** When matching/testing against a generated RegExp, your path **must** begin with a leading dot (`"."`)!
 
 ## Regular Expressions
 
@@ -95,18 +97,16 @@ In these situations, `regexdot` **does not** parse nor manipulate your pattern i
 This also means that you must manage and parse your own `keys`~!<br>
 You may use [named capture groups](https://javascript.info/regexp-groups#named-groups) or traverse the matched segments manually the "old-fashioned" way:
 
-> **Important:** Please check your target browsers' and target [Node.js runtimes' support](https://node.green/#ES2018-features--RegExp-named-capture-groups)!
-
 ```js
 // Named capture group
-const named = regexdot(/^\/posts[/](?<year>[0-9]{4})[/](?<month>[0-9]{2})[/](?<title>[^\/]+)/i);
-const { groups } = named.pattern.exec('/posts/2019/05/hello-world');
+const named = regexdot(/^\/posts[\.](?<year>[0-9]{4})[\.](?<month>[0-9]{2})[\.](?<title>[^\.]+)/i);
+const { groups } = named.pattern.exec('.posts.2019.05.hello-world');
 console.log(groups);
 //=> { year: '2019', month: '05', title: 'hello-world' }
 
 // Widely supported / "Old-fashioned"
-const named = regexdot(/^\/posts[/]([0-9]{4})[/]([0-9]{2})[/]([^\/]+)/i);
-const [url, year, month, title] = named.pattern.exec('/posts/2019/05/hello-world');
+const named = regexdot(/^\.posts[\.]([0-9]{4})[\.]([0-9]{2})[\.]([^\.]+)/i);
+const [url, year, month, title] = named.pattern.exec('.posts.2019.05.hello-world');
 console.log(year, month, title);
 //=> 2019 05 hello-world
 ```
@@ -143,11 +143,11 @@ By default, the generated `RegExp` will test that the URL begins and _ends with_
 ```js
 const { regexdot } = require('@fabrix/regexdot');
 
-regexdot('/users').pattern.test('/users/fabrix'); //=> false
-regexdot('/users', true).pattern.test('/users/fabrix'); //=> true
+regexdot('.users').pattern.test('.users.fabrix'); //=> false
+regexdot('.users', true).pattern.test('.users.fabrix'); //=> true
 
-regexdot('/users/:name').pattern.test('/users/fabrix/repos'); //=> false
-regexdot('/users/:name', true).pattern.test('/users/fabrix/repos'); //=> true
+regexdot('.users.:name').pattern.test('.users.fabrix.repos'); //=> false
+regexdot('.users.:name', true).pattern.test('.users.fabrix.repos'); //=> true
 ```
 
 ### regexdot(rgx)
