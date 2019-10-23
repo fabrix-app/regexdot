@@ -13,7 +13,6 @@ export const regexdot = function (str, loose = false) {
 
 
   while (tmp = arr.shift()) {
-    console.log('brk tmp', tmp)
     c = tmp[0]
     d = tmp[1]
 
@@ -28,14 +27,6 @@ export const regexdot = function (str, loose = false) {
       o = tmp.indexOf('?', 1)
       ext = -1 // tmp.indexOf('.', 1)
 
-      console.log('brk o', o, ext)
-
-      console.log('brk search', tmp.substring(1, !!~o
-        ? o
-        : !!~ext
-          ? ext
-          : tmp.length
-      ))
       keys.push(tmp.substring(1, !!~o
         ? o
         : !!~ext
@@ -44,9 +35,6 @@ export const regexdot = function (str, loose = false) {
       ))
 
       // If no extension or optional, use X, otherwise use Y
-      console.log('brk use o', !!~o)
-      console.log('brk use ext', !~ext)
-
       pattern += !!~o && !~ext
         ? '(?:\\.([^\\.]+?))?'
         : '\\.([^\\.]+?)'
@@ -54,7 +42,6 @@ export const regexdot = function (str, loose = false) {
       console.log('brk pattern', pattern)
       // If no extension
       if (!!~ext) {
-        console.log('brk ext', ext)
         pattern += (!!~o ? '?' : '') + '\\.' + tmp.substring(ext)
       }
     }
@@ -67,7 +54,6 @@ export const regexdot = function (str, loose = false) {
   // Add the loose
   pattern += (loose ? '(?=$|\\.)' : '\\.?$')
 
-  console.log('brk pattern final', '^' + pattern)
   return {
     keys: keys,
     pattern: new RegExp('^' + pattern, 'i')
