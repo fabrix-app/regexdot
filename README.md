@@ -81,7 +81,7 @@ exec('.movies.narnia.mp4', bar)
 
 // Wildcard
 // ---
-let baz = regexdot('users/*')
+let baz = regexdot('users.*')
 // baz.pattern => /^\.users\.(.*)\.?$/i
 // baz.keys => ['wild']
 

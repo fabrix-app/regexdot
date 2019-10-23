@@ -1,5 +1,5 @@
 {
-  "name": "regexdot",
+  "name": "@fabrix/regexdot",
   "version": "1.0.0",
   "repository": "git@github.com:fabrix-app/regexdot.git",
   "description": "Mapped Object patterns into RegExp‍",
