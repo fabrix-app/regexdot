@@ -4,7 +4,7 @@
   "repository": "git@github.com:fabrix-app/regexdot.git",
   "description": "Mapped Object patterns into RegExp‍",
   "main": "dist/index.js",
-  "types": "src/typings/index.d.ts",
+  "typings": "dist/index.d.ts",
   "license": "MIT",
   "author": {
     "name": "scott-wyatt",

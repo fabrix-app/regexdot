@@ -1,13 +1,18 @@
-export const regexdot = function (str, loose = false) {
-  // Utility
+export const regexdot = function (str: string | RegExp, loose: boolean = false): { keys: boolean | string[], pattern: RegExp} {
+  // Utility to take a regex and convert it to keys, pattern
   if (str instanceof RegExp) {
     return { keys: false, pattern: str }
   }
 
-  const keys = []
-  let c, d, o, tmp, ext,
-    pattern = '',
-    arr = str.split('.')
+  // Dictionary of keys
+  const keys: string[] = []
+  let c: string,
+    d: string,
+    o: number,
+    tmp: string,
+    ext: number,
+    pattern: string = '',
+    arr: string[] = str.split('.')
 
   arr[0] || arr.shift()
 
@@ -39,7 +44,6 @@ export const regexdot = function (str, loose = false) {
         ? '(?:\\.([^\\.]+?))?'
         : '\\.([^\\.]+?)'
 
-      console.log('brk pattern', pattern)
       // If no extension
       if (!!~ext) {
         pattern += (!!~o ? '?' : '') + '\\.' + tmp.substring(ext)
