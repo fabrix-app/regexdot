@@ -1,6 +1,6 @@
 {
   "name": "@fabrix/regexdot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "git@github.com:fabrix-app/regexdot.git",
   "description": "Mapped Object patterns into RegExp‍",
   "main": "dist/index.js",
